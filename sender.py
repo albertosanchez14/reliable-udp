@@ -128,22 +128,23 @@ class Sender:
 
 
 if __name__ == "__main__":
-    # Arguments
+    # Check the arguments
     if len(sys.argv) != 6:
         print("Usage: python3 sender.py <receiverAddress> <receiverPort> <senderPort> <timeout> <file_name>")
         sys.exit()
-    receiverAddress = sys.argv[1]
     if not sys.argv[2].isdigit():
         print("The receiverPort must be a number")
         sys.exit()
-    receiverPort = int(sys.argv[2])
     if not sys.argv[3].isdigit():
         print("The senderPort must be a number")
         sys.exit()
-    senderPort = int(sys.argv[3])
     if not sys.argv[4].isdigit():
         print("The timeout must be a number")
         sys.exit()
+    # Get the arguments
+    receiverAddress = sys.argv[1]
+    receiverPort = int(sys.argv[2])
+    senderPort = int(sys.argv[3])
     timeout = int(sys.argv[4])
     file_name = sys.argv[5]
     # Sender
