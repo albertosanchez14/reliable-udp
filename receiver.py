@@ -1,3 +1,11 @@
+"""
+    Name: Alberto Sanchez del Alamo
+    Student ID: 21111907
+    Date: 3/21/2024
+    Course: CS 436
+"""
+
+
 from socket import *
 import random
 import sys
