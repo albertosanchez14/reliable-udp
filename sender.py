@@ -58,7 +58,6 @@ class Sender:
             start = time.time() * 1000
             end = start
             acklog = open("ack.log", "a", newline="\n")
-            acklog.write("Acks received: ")
             while end - start < timeout:
                 try:
                     # Wait for the acks
@@ -69,15 +68,11 @@ class Sender:
                     packet = Packet().decode(message)
                     acks.add(packet.seqnum)
                     # Log the acks
-                    acklog.write(str(packet.seqnum) + ", ")
+                    acklog.write(str(packet.seqnum) + "\n")
                     end = time.time() * 1000
                 except TimeoutError:
                     end = time.time() * 1000
-            # Remove the last comma
-            acklog.seek(acklog.tell() - 2, 0)
-            acklog.truncate()
             # Close the log file
-            acklog.write("\n")
             acklog.close()
         
         # Send EOT
@@ -112,17 +107,12 @@ class Sender:
         """
         # Open the log file
         seqnumlog = open("seqnum.log", "a")
-        seqnumlog.write("Sending packets: ")
         # Send the packets
         for packet in data:
             if packet.seqnum not in acks:
-                seqnumlog.write(str(packet.seqnum) + ", ")
+                seqnumlog.write(str(packet.seqnum) + "\n")
                 self._clientSocket.sendto(packet.encode(), (receiverAddress, receiverPort))
-        # Remove the last comma
-        seqnumlog.seek(seqnumlog.tell() - 2, 0)
-        seqnumlog.truncate()
         # Close the log file
-        seqnumlog.write("\n")
         seqnumlog.close()
         return
 

@@ -28,41 +28,20 @@ class Receiver:
         packet = Packet().decode(message)
         # Log the received packet
         arrival_log = open("arrival.log", "a")
-        arrival_log.write("Received packets: ")
-        last_seqnum = 0
-        # Log the dropped packets
-        drop_log = open("drop.log", "a")
-        drop_log.write("Dropped packets: ")
         # Packet is not EOT
         while packet.type != 2:
-            # Log the packets
-            if packet.seqnum <= last_seqnum:
-                # Received packets
-                arrival_log.seek(arrival_log.tell() - 2, 0)
-                arrival_log.truncate()
-                arrival_log.write("\nReceived packets: " + str(packet.seqnum) + ", ")
-                # Dropped packets
-                drop_log.seek(drop_log.tell() - 2, 0)
-                drop_log.truncate()
-                drop_log.write("\nDropped packets: ")
-            else:
-                arrival_log.write(str(packet.seqnum) + ", ")
-            last_seqnum = packet.seqnum
+            # Log the received packet
+            arrival_log.write(str(packet.seqnum) + "\n")
             # Receive the corresponding ack packet
-            ack_packet = self.rec_packet(packet, drop_log)
+            ack_packet = self.rec_packet(packet)
             # Send the ACK packet
             if ack_packet is not None:
                 self._serverSocket.sendto(ack_packet.encode(), clientAddress)
             # Get the next packet
             message, clientAddress = self._serverSocket.recvfrom(2048)
             packet = Packet().decode(message)
-        # Close the log file
-        arrival_log.seek(arrival_log.tell() - 2, 0)
-        arrival_log.truncate()
+        # Close the log files
         arrival_log.close()
-        drop_log.seek(drop_log.tell() - 2, 0)
-        drop_log.truncate()
-        drop_log.close()
         # Send EOT
         eot_packet = Packet(2, packet.seqnum, 0, None)
         self._serverSocket.sendto(eot_packet.encode(), clientAddress)
@@ -72,13 +51,15 @@ class Receiver:
         self._serverSocket.close()
         return
 
-    def rec_packet(self, packet, drop_log) -> Packet | None:
+    def rec_packet(self, packet) -> Packet | None:
         """
         Function to handle the received packet
         """
+        # Log the dropped packets
+        drop_log = open("drop.log", "a")
         # If the packet is not EOT, drop the packet with the specified/input probability; 
         if random.random() < self._drop_prob:
-            drop_log.write(str(packet.seqnum) + ", ")
+            drop_log.write(str(packet.seqnum) + "\n")
             return None
         # If the packet is not an EOT and was not dropped, acknowledge the packet; 
         # the seqnum of the ACK packet should be the same as the seqnum of the received packet; 
@@ -92,6 +73,8 @@ class Receiver:
         # If the packet is out-of-order, it should be buffered. 
         # Save the packet
         self.received_packets.append(packet)
+        # Close the log file
+        drop_log.close()
         return ack_packet
     
     def _save_to_file(self) -> None:
